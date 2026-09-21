@@ -82,8 +82,6 @@ html[data-theme='light'] {
 
     --socials--color: #98B2BF;
 
-    --tonkeeper__icon: url("/assets/tonkeeper_white.svg");
-    --tonkeeper__icon--mono: url("/assets/tonkeeper_icon.svg");
     --web__wallet__icon: url("/assets/web_wallet.svg");
 
     --copy__link__icon: url("/assets/copy_link_icon.svg");
@@ -160,8 +158,6 @@ html[data-theme='dark'] {
     --arrow--right--inversed: url("/assets/arrow_right_dark-grey.svg");
 
     --socials--color: #606069;
-    --tonkeeper__icon: url("/assets/tonkeeper_icon.svg");
-    --tonkeeper__icon--mono: url("/assets/tonkeeper_icon.svg");
     --web__wallet__icon: url("/assets/web_wallet.svg");
     --copy__link__icon: url("/assets/copy_link_icon_dark.svg");
     --copy__link__icon--success: url("/assets/copy_link_success.svg");

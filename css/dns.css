@@ -1461,20 +1461,8 @@ p {
     transform: rotate(0);
 }
 
-#installWebwalletBtn, #installTonkeeperBtn {
+#installWebwalletBtn {
     display: none;
-}
-
-.tonkeeper__icon {
-    width: 24px;
-    height: 24px;
-    background: var(--tonkeeper__icon) center no-repeat;
-    background-size: contain;
-}
-
-.tonkeeper__icon.tonkeeper__icon--mono {
-    background: var(--tonkeeper__icon--mono) center no-repeat;
-
 }
 
 .tooltip--backdrop {
@@ -1723,10 +1711,6 @@ p {
     animation: var(--gradient--animation--transition);
 }
 
-#tonkeeperButton {
-    display: none;
-}
-
 #bid__input--converted__price, .bid__input--error {
     padding-top: 8px;
 }
@@ -1740,11 +1724,6 @@ p {
         display: none;
     }
 
-    #tonkeeperButton {
-        display: block;
-    }
-
-
     .bid__modal--first__step, 
     .bid__modal--second__step, 
     .bid__modal--payment, 
@@ -1753,10 +1732,6 @@ p {
     }
 
     .bid__modal--qr {
-        display: none;
-    }
-
-    .bidPrice--tonkepeer {
         display: none;
     }
 

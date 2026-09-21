@@ -1043,7 +1043,7 @@ function togglePaymentModal({
 
     const renderSecondStep = () => {
         updateBidModalPaymentData()
-        prepareLinks();
+        const paymentUrl = prepareLinks();
 
         isDomainFree(domainType)
             ? analyticService.sendEvent({type: 'place_an_initial_bid'})
@@ -1053,7 +1053,7 @@ function togglePaymentModal({
         toggle('.bid__modal--first__step', false)
         toggle('.bid__modal--second__step', true)
 
-        renderQr('#freeQr', buildTransferUrl('https://app.tonkeeper.com/transfer/'))
+        renderQr('#freeQr', paymentUrl)
 
         setAddress($('#transactionAddress'), destinationAddress)
 
@@ -1081,31 +1081,19 @@ function togglePaymentModal({
     }
 
     const prepareLinks = () => {
-        const isExtensionInstalled = !isMobile() && window.ton;
-        const buyUrl = buildTransferUrl('ton://transfer/');
-        const tonkeeperUrl = buildTransferUrl('https://app.tonkeeper.com/transfer/');
-
-        if (isExtensionInstalled) {
-            $('#freeBtn').href = buyUrl;
-        } else {
-            $('#freeBtn').href = tonkeeperUrl;
-        }
-
-        if (isMobile()) {
-            $('#freeBtn').href = buyUrl;
-        }
-
-        $('#tonkeeperButton').href = tonkeeperUrl;
-        $('#copyLinkbutton').setAttribute('address', buyUrl);
+        const paymentUrl = buildTransferUrl();
+        $('#freeBtn').href = paymentUrl;
+        $('#copyLinkbutton').setAttribute('address', paymentUrl);
+        return paymentUrl;
     }
 
-    const buildTransferUrl = (baseUrl) => {
+    const buildTransferUrl = () => {
         const amount = encodeURIComponent(new BigNumber(localPrice).multipliedBy(1000000000));
         const payloadParam = payloadIn
             ? `bin=${encodeURIComponent(payloadIn)}`
             : `text=${encodeURIComponent(domain)}`;
 
-        return `${baseUrl}${destinationAddress}?amount=${amount}&${payloadParam}`;
+        return `ton://transfer/${destinationAddress}?amount=${amount}&${payloadParam}`;
     }
     
     openPaymentModal();
