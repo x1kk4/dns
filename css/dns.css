@@ -1052,19 +1052,20 @@ p {
     font-weight: 600;
     font-size: 18px;
     line-height: 28px;
-    position: relative;
 }
 
-.sale__price:before {
-    content: '';
+.coin-amount {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.gram-icon {
     width: 20px;
     height: 20px;
     display: block;
-    position: absolute;
-    left: -24px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--ton-logo-path) center no-repeat;
+    flex-shrink: 0;
 }
 
 #freeComment {
@@ -1124,8 +1125,10 @@ p {
     position: absolute;
     width: 20px;
     height: 20px;
-    left: 24px;
-    top: 50%;
+    right: 24px;
+    top: calc(50% + 12px);
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .bid__modal--domain__name {
@@ -1160,6 +1163,7 @@ p {
 
 .bid__modal--payment .payment__textline {
     display: flex;
+    margin-inline-start: 4px;
 }
 
 .bid__modal--payment .payment__message {
@@ -1228,7 +1232,7 @@ p {
 }
 
 .bid__modal--first__step .btn {
-    gap: 0;
+    gap: 4px;
     width: 100%;
 }
 
@@ -1239,11 +1243,16 @@ p {
 }
 
 .bid__input--container .default__input {
-    padding: 12px 24px 12px 52px;
+    padding: 12px 52px 12px 24px;
+    text-align: right;
 }
 
 .bid__modal--second__step {
     display: none;
+}
+
+.bid__modal--second__step .bid__modal--subheader {
+    column-gap: 4px;
 }
 
 .bid__modal--second__step .button__container {
@@ -1944,6 +1953,11 @@ p {
     padding: 16px 150px 16px 24px;
 }
 
+#bidPrice,
+#bidPrice-payment-loading {
+    font-weight: 600;
+}
+
 #bidPrice {
     display: inline-flex;
     flex-direction: row;
@@ -1952,10 +1966,8 @@ p {
 }
 
 .bidPrice-icon {
-    display: inline-block;
     width: 18px;
     height: 18px;
-    padding-left: 2px;
 }
 
 #busyDomainScreen.edit-expand #domainEditContainer,
@@ -2140,13 +2152,6 @@ p {
         font-weight: 600;
         font-size: 16px !important;
         line-height: 24px !important;
-    }
-
-    .sale__price:before {
-        width: 20px;
-        height: 20px;
-        left: -24px;
-        top: 50%;
     }
 
     .row__title {
@@ -2849,10 +2854,6 @@ input.input__clicked {
     color: var(--text-tetriary);
 }
 
-.disabled__input--icon {
-    fill: var(--text-tetriary);
-}
-
 input::placeholder, .start-input-container__domain {
     color: var(--text-tetriary);
     font-weight: 400;
@@ -2926,8 +2927,18 @@ a.edit-btn:hover {
     display: inline-block;
 }
 
-.bid__modal--ton__icon {
-    margin-top: -1px;
+.bid__modal--gram__icon {
+    --gram-color: white;
+    --gram-sparkle-color: var(--button--background);
+}
+
+.btn:hover .bid__modal--gram__icon {
+    --gram-sparkle-color: var(--accent-hover);
+}
+
+.btn:disabled .bid__modal--gram__icon {
+    --gram-color: var(--text-tetriary);
+    --gram-sparkle-color: var(--disabled--button--background-content);
 }
 
 @keyframes bounceIn {

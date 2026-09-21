@@ -622,8 +622,6 @@ function adjustPaymentModalCaption(modalType) {
         $('#payment-message-success .payment__message--title').innerText = store.localeDict.payment_success_header;
         $('#payment-message-success .payment__message--description').innerText = store.localeDict.payment_success_description;
 
-        $('#inputTonIcon').classList.remove('disabled__input--icon');
-
         return;
     }
 
@@ -639,8 +637,6 @@ function adjustPaymentModalCaption(modalType) {
         $('#payment-message-success .payment__message--title').innerText = store.localeDict.payment_success_header;
         $('#payment-message-success .payment__message--description').innerText = '';
 
-        $('#inputTonIcon').classList.add('disabled__input--icon');
-
         return;
     }
 
@@ -655,8 +651,6 @@ function adjustPaymentModalCaption(modalType) {
 
         $('#payment-message-success .payment__message--title').innerText = store.localeDict.payment_success_header;
         $('#payment-message-success .payment__message--description').innerText = '';
-
-        $('#inputTonIcon').classList.add('disabled__input--icon');
 
         return;
     }
