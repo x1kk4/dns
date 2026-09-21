@@ -397,6 +397,84 @@ function addressToString(address, isTestNet = false) {
     return new TonWeb.Address(address).toString(true, true, true, isTestNet);
 }
 
+function normalizeAccountAddress(value) {
+    if (!value) return null;
+    try {
+        const address = new TonWeb.Address(value);
+        const rawAddress = address.toString(false).toUpperCase();
+        if (typeof value === 'string' && !address.isUserFriendly && value.toUpperCase() !== rawAddress) {
+            return null;
+        }
+        return rawAddress;
+    } catch (error) {
+        return null;
+    }
+}
+
+function isSameAccount(first, second) {
+    const address = normalizeAccountAddress(first);
+    return address !== null && address === normalizeAccountAddress(second);
+}
+
+function isValidAddressForNetwork(value, isTestnet = false) {
+    if (!normalizeAccountAddress(value)) return false;
+    return isTestnet || !new TonWeb.Address(value).isTestOnly;
+}
+
+const displayAddressRequests = new WeakMap();
+
+async function getDisplayAddress(address, isTestnet = false, previousAddress) {
+    const rawAddress = normalizeAccountAddress(address);
+    if (!rawAddress) return '';
+    const fallbackAddress = previousAddress || addressToString(rawAddress, isTestnet);
+
+    const controller = new AbortController();
+    let timeoutId;
+    const request = async () => {
+        const book = await fetchToncenterIndex(
+            'addressBook', { address: rawAddress }, isTestnet, controller.signal,
+        );
+        const entry = Object.entries(book).find(([key]) => normalizeAccountAddress(key) === rawAddress);
+        const friendly = entry && entry[1] && entry[1].user_friendly;
+        if (typeof friendly !== 'string') return fallbackAddress;
+
+        const parsed = new TonWeb.Address(friendly);
+        if (!parsed.isUserFriendly || parsed.isTestOnly !== isTestnet
+            || parsed.toString(false).toUpperCase() !== rawAddress) return fallbackAddress;
+        return parsed.toString(true, true, parsed.isBounceable, isTestnet);
+    };
+
+    try {
+        return await Promise.race([
+            request(),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => {
+                    controller.abort();
+                    resolve(fallbackAddress);
+                }, 10000);
+            }),
+        ]);
+    } catch (error) {
+        return fallbackAddress;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function setDisplayAddress(node, address, isTestnet, isCurrent) {
+    if (!isCurrent()) return;
+    const request = {};
+    displayAddressRequests.set(node, request);
+    if (!isSameAccount(node.dataset.dataAddress, address)) {
+        node.innerText = '…';
+        delete node.dataset.dataAddress;
+    }
+    const displayAddress = await getDisplayAddress(address, isTestnet, node.dataset.dataAddress);
+    if (displayAddressRequests.get(node) === request && isCurrent()) {
+        if (displayAddress) setAddress(node, displayAddress);
+    }
+}
+
 async function getAuctionBidPayload(string) {
     let a = new TonWeb.boc.Cell();
     a.bits.writeUint(0, 32);
@@ -676,7 +754,7 @@ async function readToncenterIndexResponse(response) {
     return json;
 }
 
-async function fetchToncenterIndex(method, params = {}, isTestnet = false) {
+async function fetchToncenterIndex(method, params = {}, isTestnet = false, signal) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => appendSearchParam(searchParams, key, value));
 
@@ -685,8 +763,10 @@ async function fetchToncenterIndex(method, params = {}, isTestnet = false) {
     const url = `${endpoint}/${method}${query ? `?${query}` : ''}`;
     const response = await fetchAndRetry(async () => {
         await waitForToncenterIndexRequestSlot();
+        if (signal?.aborted) throw new Error('Toncenter v3 request aborted');
         return fetch(url, {
             headers: getToncenterIndexHeaders(isTestnet),
+            signal,
         });
     });
 

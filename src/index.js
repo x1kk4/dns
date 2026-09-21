@@ -57,6 +57,7 @@ let currentDomain = null
 let currentOwner = null
 let currentDnsItem = null
 let previousBid = null
+let domainViewVersion = 0
 
 const removeListeners = {}
 const DEFAULT_CARETE_HELPER_TEXT = '.ton'
@@ -72,6 +73,7 @@ function isDomainFree(domainType){
 }
 
 const clear = () => {
+    domainViewVersion++
     clearInterval(updateIntervalId)
     clearInterval(auctionTimerIntervalId)
     freeQrUrl = null
@@ -125,8 +127,12 @@ const validateDomain = (domain) => {
 const setDomain = (domain, isTimerMounted) => {
     scrollToTop()
     currentDomain = domain
+    const viewVersion = ++domainViewVersion
+    let pendingLoad = null
 
     const loadDomain = async (setShimmers) => {
+        const isCurrentLoad = () => currentDomain === domain
+            && domainViewVersion === viewVersion
         if (setShimmers) {
             if (!isTimerMounted) {
                 FlipTimer.unmountTimers()
@@ -187,15 +193,15 @@ const setDomain = (domain, isTimerMounted) => {
             Math.floor(Date.now() / 1000) - lastFillUpTime > MS_IN_ONE_LEAP_YEAR / 1000
         )
 
-        if (currentDomain === domain) {
+        if (isCurrentLoad()) {
             if (!domainExists) {
                 storeDomainStatus('free')
                 renderFreeDomain(domain)
                 setScreen('freeDomainScreen')
             } else if (ownerAddress) {
-                currentOwner = ownerAddress.toString(false, true, true, IS_TESTNET);
+                currentOwner = normalizeAccountAddress(ownerAddress);
                 $('#manageDomainGoBackBtn').style.display = 'none';
-                const isTakenByUser = walletController.getAccountAddress() === currentOwner;
+                const isTakenByUser = isSameAccount(walletController.getAccountAddress(), currentOwner);
 
                 // GG INTEGRATION
                 let ggDomainData = null;
@@ -234,12 +240,13 @@ const setDomain = (domain, isTimerMounted) => {
                     // GG INTEGRATION
                 }
 
+                if (!isCurrentLoad()) return;
                 currentDnsItem = dnsItem
                 storeDomainStatus('busy')
                 renderBusyDomain(
                     domain,
                     domainAddressString,
-                    ownerAddress.toString(true, true, true, IS_TESTNET),
+                    ownerAddress,
                     lastFillUpTime,
                     isTakenByUser,
                     isDomainExpired
@@ -266,6 +273,13 @@ const setDomain = (domain, isTimerMounted) => {
         }
     }
 
+    const refreshDomain = (setShimmers) => {
+        if (!pendingLoad) {
+            pendingLoad = loadDomain(setShimmers).finally(() => { pendingLoad = null; });
+        }
+        return pendingLoad;
+    };
+
     clearInterval(auctionTimerIntervalId)
     freeQrUrl = null
     auctionQrUrl = null
@@ -281,8 +295,8 @@ const setDomain = (domain, isTimerMounted) => {
     setScreen('main')
 
     clearInterval(updateIntervalId)
-    updateIntervalId = setInterval(() => loadDomain(), 10 * 1000)
-    return loadDomain(true)
+    updateIntervalId = setInterval(() => refreshDomain(), 10 * 1000)
+    return refreshDomain(true)
 }
 
 let currentDomainStatus = null
@@ -419,12 +433,7 @@ const renderAuctionDomain = (domain, domainItemAddress, auctionInfo) => {
 
     const auctionEndTime = auctionInfo.auctionEndTime // unixtime
     const bestBidAmount = auctionInfo.maxBidAmount
-    const bestBidAddress = auctionInfo.maxBidAddress.toString(
-        true,
-        true,
-        true,
-        IS_TESTNET
-    )
+    const bestBidAddress = auctionInfo.maxBidAddress
 
     const prevDate = $('#auction-bid-flip-clock-container').dataset.endDate
     const endDate = new Date(auctionEndTime * 1000)
@@ -446,7 +455,7 @@ const renderAuctionDomain = (domain, domainItemAddress, auctionInfo) => {
 
     $('#auctionAmount').innerText = formatNumber(auctionAmount, false)
 
-    setAddress($('#auctionOwnerAddress'), bestBidAddress)
+    renderDomainAddress($('#auctionOwnerAddress'), bestBidAddress, domain)
 
     const minBet = TonWeb.utils.fromNano(
         bestBidAmount.mul(new TonWeb.utils.BN(105)).div(new TonWeb.utils.BN(100))
@@ -501,6 +510,13 @@ const renderFreeDomain = async (domain) => {
     })
 }
 
+const renderDomainAddress = (node, address, domain) => {
+    const viewVersion = domainViewVersion
+    const type = domainType
+    return setDisplayAddress(node, address, IS_TESTNET, () => currentDomain === domain
+        && domainViewVersion === viewVersion && domainType === type)
+}
+
 const renderBusyDomain = (
     domain,
     domainItemAddress,
@@ -511,7 +527,7 @@ const renderBusyDomain = (
 ) => {
     domainType = BUSY_DOMAIN_TYPE
 
-    setAddress($('#busyOwnerAddress'), ownerAddress)
+    renderDomainAddress($('#busyOwnerAddress'), ownerAddress, domain)
     const expiresDate = new Date(lastFillUpTime * 1000 + MS_IN_ONE_LEAP_YEAR)
     const prevDate = $('#flip-clock-container').dataset.endDate
     const isDateEqual = String(prevDate) === String(expiresDate)
@@ -1167,16 +1183,13 @@ const createEditBtn = (containerName) => {
 }
 
 const toggleManageDomainForm = async (domain, dnsItem) => {
-    if (currentOwner !== walletController.getAccountAddress()) {
+    if (!isSameAccount(currentOwner, walletController.getAccountAddress())) {
         alert(store.localeDict.not_owner)
         return
     }
 
-    const tonConnectAccauntAddress = walletController.getAccountAddress()
-    if (tonConnectAccauntAddress !== currentOwner) {
-        alert(store.localeDict.not_owner)
-        return
-    }
+    const viewVersion = ++domainViewVersion
+    const isCurrentForm = () => domain === currentDomain && domainViewVersion === viewVersion
 
     FlipTimer.unmountTimers();
     setScreen('domainLoadingScreen');
@@ -1188,10 +1201,10 @@ const toggleManageDomainForm = async (domain, dnsItem) => {
     $('#manageDomainGoBackBtn').setAttribute('disabled', true);
     clearInterval(updateIntervalId);
 
-    $('#manageDomainGoBackBtn').addEventListener('click', () => {
+    $('#manageDomainGoBackBtn').onclick = () => {
         $('#manageDomainGoBackBtn').style.display = 'none';
         setDomain(domain);
-    });
+    };
 
     try {
         const dnsRecordWallet = await dnsItem.resolve(
@@ -1212,16 +1225,22 @@ const toggleManageDomainForm = async (domain, dnsItem) => {
             TonWeb.dns.DNS_CATEGORY_NEXT_RESOLVER
         )
 
-        if (domain === currentDomain) {
-            $('#editWalletRow input').value = dnsRecordWallet
-                ? dnsRecordWallet.toString(true, true, true, IS_TESTNET)
-                : ''
+        if (!isCurrentForm()) return;
+        const [walletAddress, resolverAddress] = await Promise.all([
+            getDisplayAddress(dnsRecordWallet, IS_TESTNET),
+            getDisplayAddress(dnsRecordResolver, IS_TESTNET),
+        ]);
+        if (!isCurrentForm()) return;
+        if (!isSameAccount(currentOwner, walletController.getAccountAddress())) {
+            throw new Error('The connected account no longer owns this domain');
+        }
+
+        {
+            $('#editWalletRow input').value = walletAddress
             $('#editAdnlRow input').value = dnsRecordSite ? dnsRecordSite.toHex() : ''
             $('#siteStorage').checked = isSiteInStorage
             $('#editStorageRow input').value = dnsRecordStorage ? dnsRecordStorage.toHex() : ''
-            $('#editResolverRow input').value = dnsRecordResolver
-                ? dnsRecordResolver.toString(true, true, true, IS_TESTNET)
-                : ''
+            $('#editResolverRow input').value = resolverAddress
 
             const setTx = async (btnToOpenModalId, key, value) => {
                 const dnsItemAddress = await dnsItem.getAddress();
@@ -1250,7 +1269,7 @@ const toggleManageDomainForm = async (domain, dnsItem) => {
                 'click',
                 () => {
                     const value = $('#editWalletRow input').value
-                    if (!value || TonWeb.Address.isValid(value)) {
+                    if (!value || isValidAddressForNetwork(value, IS_TESTNET)) {
                         setTx(
                             '#editWalletRow',
                             TonWeb.dns.DNS_CATEGORY_WALLET,
@@ -1313,7 +1332,7 @@ const toggleManageDomainForm = async (domain, dnsItem) => {
                 'click',
                 () => {
                     const value = $('#editResolverRow input').value
-                    if (!value || TonWeb.Address.isValid(value)) {
+                    if (!value || isValidAddressForNetwork(value, IS_TESTNET)) {
                         setTx(
                             '#editResolverRow',
                             TonWeb.dns.DNS_CATEGORY_NEXT_RESOLVER,
@@ -1330,6 +1349,7 @@ const toggleManageDomainForm = async (domain, dnsItem) => {
         $('#manageDomainGoBackBtn').setAttribute('disabled', false);
         setScreen('busyDomainScreen');
     } catch (e) {
+        if (!isCurrentForm()) return;
         console.error(e)
         alert(store.localeDict.manage_domain_unavailable);
         $('#manageDomainGoBackBtn').style.display = 'none';
@@ -1487,8 +1507,10 @@ $('.start-input-container__domain--container').addEventListener('click', () => {
 
 document.querySelectorAll('.copy__addr').forEach((btn) => {
     btn.addEventListener('click', (e) => {
+        const address = e.target.parentNode.querySelector('.addr').dataset.dataAddress;
+        if (!address) return;
         copyToClipboard(
-            e.target.parentNode.querySelector('.addr').dataset.dataAddress,
+            address,
             e.target.parentNode.querySelector('button'),
         );
     })
@@ -1527,6 +1549,7 @@ document.querySelectorAll('.addr').forEach((node) => {
     node.addEventListener('click', e => {
         e.preventDefault()
         e.stopPropagation()
+        if (!node.dataset.dataAddress) return;
         window.open(tonscanUrl + '/address/' + node.dataset.dataAddress, '_blank')
     })
 })
