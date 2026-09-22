@@ -203,13 +203,6 @@ const setDomain = (domain, isTimerMounted) => {
                 $('#manageDomainGoBackBtn').style.display = 'none';
                 const isTakenByUser = isSameAccount(walletController.getAccountAddress(), currentOwner);
 
-                // GG INTEGRATION
-                let ggDomainData = null;
-                let ggDomainState = null;
-
-                hideGGElements(domain);
-                // GG INTEGRATION
-
                 if (isTakenByUser) {
                     $('#infoBtn').style.display = 'none';
                     $('#manageDomainBtn').style.display = 'inline-flex';
@@ -232,12 +225,6 @@ const setDomain = (domain, isTimerMounted) => {
                     $('#infoBtn').style.display = 'inline-flex';
                     $('#manageDomainBtn').style.display = 'none';
                     $('#renewDomainButton').style.display = 'none';
-
-                    // GG INTEGRATION
-                    if (!isDomainExpired) {
-                        ggDomainData = await getGGDomainData(domainAddressString);
-                    }
-                    // GG INTEGRATION
                 }
 
                 if (!isCurrentLoad()) return;
@@ -252,19 +239,7 @@ const setDomain = (domain, isTimerMounted) => {
                     isDomainExpired
                 )
 
-                // GG INTEGRATION
-                if (!!ggDomainData) {
-                    renderGGElements(ggDomainData, domain);
-
-                    if (!!ggDomainData.sale) {
-                        ggDomainState = 'onSale';
-                    } else if (!!ggDomainData.auction) {
-                        ggDomainState = 'onAuction';
-                    }
-                }
-                // GG INTEGRATION
-
-                setScreen('busyDomainScreen', ggDomainState)
+                setScreen('busyDomainScreen')
             } else {
                 storeDomainStatus('auction')
                 renderAuctionDomain(domain, domainAddressString, auctionInfo)
@@ -1359,89 +1334,6 @@ $(".reset__input--icon").addEventListener('click', (e) => {
     $('.start-input').value = ''
     resetError($('.start-error'))
 })
-
-// GG INTEGRATION
-function getGGUIData() {
-    return {
-        ggHiddenClassName: 'gg__hidden',
-        ggElements: {
-            ggSalePriceRow: $('#ggSalePriceRow'),
-            ggAuctionMinBidRow: $('#ggAuctionMinBidRow'),
-            ggAuctionMaxBidRow: $('#ggAuctionMaxBidRow'),
-            ggBuyBtn: $('#ggBuyBtn'),
-            ggPlaceBidBtn: $('#ggPlaceBidBtn'),
-            ggMakeOfferBtn: $('#ggMakeOfferBtn'),
-        }
-    };
-}
-
-function hideGGElements(domain) {
-    const { ggHiddenClassName, ggElements } = getGGUIData();
-
-    Object.values(ggElements).forEach((node) => {
-        if (!!node && !node.classList.contains(ggHiddenClassName) && node.dataset.domain !== domain) {
-            node.classList.add(ggHiddenClassName);
-        }
-    })
-}
-
-function renderGGElements(ggDomainData, domain) {
-    const { ggHiddenClassName, ggElements } = getGGUIData();
-    const {
-        ggSalePriceRow,
-        ggAuctionMinBidRow,
-        ggAuctionMaxBidRow,
-        ggBuyBtn,
-        ggPlaceBidBtn,
-        ggMakeOfferBtn,
-    } = ggElements;
-    const ggPrimaryBtnClassName = getBtnClassName('primary');
-    const ggOutlineBtnClassName = getBtnClassName('outline');
-    const ggTertiaryBtnClassName = getBtnClassName('tertiary');
-
-    ggMakeOfferBtn.setAttribute('href', ggDomainData.make_offer_url);
-    ggMakeOfferBtn.onclick = function () {
-        analyticService.sendEvent({ type: 'make_offer_click' });
-    };
-
-    if (!!ggDomainData.sale) {
-        $('#ggSalePrice').innerText = ggDomainData.sale.price.ton;
-        $('#ggSalePriceConverted').innerText = ggDomainData.sale.price.usd;
-        ggSalePriceRow.classList.remove(ggHiddenClassName);
-        ggBuyBtn.setAttribute('href', ggDomainData.sale.buy_url);
-        ggBuyBtn.className = ggPrimaryBtnClassName;
-        ggMakeOfferBtn.className = ggOutlineBtnClassName;
-    } else if (!!ggDomainData.auction) {
-        $('#ggAuctionMinBid').innerText = ggDomainData.auction.min_bid.ton;
-        $('#ggAuctionMinBidConverted').innerText = ggDomainData.auction.min_bid.usd;
-        ggAuctionMinBidRow.classList.remove(ggHiddenClassName);
-        ggPlaceBidBtn.setAttribute('href', ggDomainData.auction.make_bid_url);
-
-        if (!!ggDomainData.auction.max_bid) {
-            $('#ggAuctionMaxBid').innerText = ggDomainData.auction.max_bid.ton;
-            $('#ggAuctionMaxBidConverted').innerText = ggDomainData.auction.max_bid.usd;
-            ggAuctionMaxBidRow.classList.remove(ggHiddenClassName);
-            ggBuyBtn.setAttribute('href', ggDomainData.auction.buy_now_url);
-            ggBuyBtn.className = ggPrimaryBtnClassName;
-            ggPlaceBidBtn.className = ggOutlineBtnClassName;
-            ggMakeOfferBtn.className = ggTertiaryBtnClassName;
-        } else {
-            ggPlaceBidBtn.className = ggPrimaryBtnClassName;
-            ggMakeOfferBtn.className = ggOutlineBtnClassName;
-        }
-    } else {
-        ggMakeOfferBtn.className = ggPrimaryBtnClassName;
-    }
-
-    Object.values(ggElements).forEach((element) => {
-        element.setAttribute('data-domain', domain);
-    });
-
-    function getBtnClassName(btnStyle) {
-        return `btn gg__btn gg__btn__${btnStyle}`;
-    }
-}
-// GG INTEGRATION
 
 // COMMON
 var oldStartInputValue = '';
