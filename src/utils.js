@@ -105,26 +105,68 @@ const getAuctionDuration = () => {
     return auction_start_duration - (auction_start_duration - auction_end_duration) * months / 12;
 }
 
-const API_URL = 'https://ton.org/api/toncoinInfo';
+const GRAM_USDT_POOL_ADDRESS = 'EQA-X_yo3fzzbDbJ_0bzFWKqtRuZFIRa1sJsveZJ1YpViO3r';
 let ACTIVE_SCREEN;
-let LAST_PRICE_UPDATED_DATE = null
+let LAST_PRICE_UPDATED_DATE = null;
 let LAST_PRICE;
+let coinPriceRequest;
+
+const fetchCoinPrice = async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        const response = await fetch('https://toncenter.com/api/v2/runGetMethodStd', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': TONCENTER_API_KEY,
+            },
+            body: JSON.stringify({
+                address: GRAM_USDT_POOL_ADDRESS,
+                method: 'get_reserves',
+                stack: [],
+            }),
+            signal: controller.signal,
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok || data.result?.exit_code !== 0) {
+            throw new Error('Failed to fetch GRAM/USDT reserves');
+        }
+
+        const gramReserve = Number(data.result.stack[0]?.number?.number) / 1e9;
+        const usdtReserve = Number(data.result.stack[1]?.number?.number) / 1e6;
+        const price = usdtReserve / gramReserve;
+        if (!Number.isFinite(gramReserve) || gramReserve <= 0 || !Number.isFinite(price) || price <= 0) {
+            throw new Error('Invalid GRAM/USDT reserves');
+        }
+
+        return price;
+    } finally {
+        clearTimeout(timeout);
+    }
+};
 
 const getCoinPrice = () => {
-    if (LAST_PRICE && LAST_PRICE_UPDATED_DATE && (Date.now() - LAST_PRICE_UPDATED_DATE < 100 * 60 * 5)) { // 30 sec
-        return Promise.resolve(LAST_PRICE)
+    if (LAST_PRICE && LAST_PRICE_UPDATED_DATE && Date.now() - LAST_PRICE_UPDATED_DATE < 30000) {
+        return Promise.resolve(LAST_PRICE);
     }
 
-    return fetch(API_URL)
-        .then((res) => res.json())
-        .then((res) => {
-            LAST_PRICE = res.price
-            LAST_PRICE_UPDATED_DATE = Date.now()
+    if (!coinPriceRequest) {
+        coinPriceRequest = fetchCoinPrice()
+            .then((price) => {
+                LAST_PRICE = price;
+                LAST_PRICE_UPDATED_DATE = Date.now();
 
-            return LAST_PRICE
-        }).catch(() => {
-            return 0
-        })
+                return price;
+            })
+            .catch(() => 0)
+            .finally(() => {
+                coinPriceRequest = null;
+            });
+    }
+
+    return coinPriceRequest;
 }
 
 function debounce(func, timeout = 300){
