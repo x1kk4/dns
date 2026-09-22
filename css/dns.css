@@ -1355,7 +1355,7 @@ p {
     left: 16px;
     background-size: cover;
     top: 12px;
-    background: url("/assets/alert.svg") center no-repeat;
+    background: url("../assets/alert.svg") center no-repeat;
 }
 
 .bid__modal--meta {
@@ -2011,7 +2011,7 @@ p {
 .edit-row-checkbox input:checked {
     background-color: var(--accent-default);
     border: 0.5px solid var(--accent-default);
-    background: url("/assets/ok_white.svg") center no-repeat, var(--accent-default);
+    background: url("../assets/ok_white.svg") center no-repeat, var(--accent-default);
 }
 
 .edit-row-checkbox label {
@@ -2287,8 +2287,8 @@ p {
     display: block;
     width: 16px;
     height: 16px;
-    mask: url("/assets/discuss.svg");
-    -webkit-mask: url("/assets/discuss.svg");
+    mask: url("../assets/discuss.svg");
+    -webkit-mask: url("../assets/discuss.svg");
     background-color: var(--text-tetriary);
 }
 
@@ -2313,8 +2313,8 @@ p {
     display: block;
     width: 16px;
     height: 16px;
-    mask: url("/assets/about.svg");
-    -webkit-mask: url("/assets/about.svg");
+    mask: url("../assets/about.svg");
+    -webkit-mask: url("../assets/about.svg");
     background-color: var(--text-tetriary);
     mask-size: cover;
     -webkit-mask-size: cover;

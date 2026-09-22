@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages
+name: Deploy DNS GRAM/USD preview to GitHub Pages
 
 on:
   push:
     branches:
-      - master
+      - preview/gram-usd
   workflow_dispatch:
 
 concurrency:
@@ -15,7 +15,7 @@ permissions: { }
 jobs:
   build:
     name: Build
-    if: github.repository == 'ton-blockchain/dns'
+    if: github.repository == 'x1kk4/dns'
     runs-on: ubuntu-latest
 
     permissions:
@@ -39,7 +39,7 @@ jobs:
 
   deploy:
     name: Deploy
-    if: github.repository == 'ton-blockchain/dns'
+    if: github.repository == 'x1kk4/dns'
     needs: [ build ]
     runs-on: ubuntu-latest
 
