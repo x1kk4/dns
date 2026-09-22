@@ -65,7 +65,7 @@ html[data-theme='light'] {
     --default--input--box--shadow--hover: 0px 0px 0px 6px rgba(5, 139, 207, 0.1);
     --default--input--box--shadow--clicked: 0px 0px 1px 5px rgba(5, 139, 207, 0.125);
     --accent-light-hover: #00A6FF;
-    --dns-logo-path: url("/assets/dns_logo.svg");
+    --dns-logo-path: url("../assets/dns_logo.svg");
 
     --free-domain-status-color: #47C58A;
     --free-domain-loader-bg: rgba(50, 213, 131, 0.2);
@@ -74,18 +74,18 @@ html[data-theme='light'] {
     --busy-domain-status-color: #ED6767;
     --busy-domain-loader-bg: rgba(237, 103, 103, 0.2);
     --busy-domain-status-backgroud: rgba(230, 70, 70, 0.08);
-    --copy--icon: url("/assets/copy_btn.svg");
-    --copy--icon--completed: url("/assets/copy_btn_done.svg");
+    --copy--icon: url("../assets/copy_btn.svg");
+    --copy--icon--completed: url("../assets/copy_btn_done.svg");
 
-    --arrow--right: url("/assets/arrow_right_light-blue.svg");
-    --arrow--right--inversed: url("/assets/arrow_right_light-grey.svg");
+    --arrow--right: url("../assets/arrow_right_light-blue.svg");
+    --arrow--right--inversed: url("../assets/arrow_right_light-grey.svg");
 
     --socials--color: #98B2BF;
 
-    --web__wallet__icon: url("/assets/web_wallet.svg");
+    --web__wallet__icon: url("../assets/web_wallet.svg");
 
-    --copy__link__icon: url("/assets/copy_link_icon.svg");
-    --copy__link__icon--success: url("/assets/copy_link_success.svg");
+    --copy__link__icon: url("../assets/copy_link_icon.svg");
+    --copy__link__icon--success: url("../assets/copy_link_success.svg");
 
     --table-border: 0.5px solid #DDE3E6;
     --table-row-hover-shadow: 0px 2px 24px rgba(114, 138, 150, 0.12);
@@ -141,7 +141,7 @@ html[data-theme='dark'] {
     --default--input--box--shadow--hover: 0px 0px 0px 6px rgba(1, 164, 245, 0.1);
     --default--input--box--shadow--clicked: 0px 0px 1px 5px rgba(1, 164, 245, 0.125);
 
-    --dns-logo-path: url("/assets/dns_logo_dark.svg");
+    --dns-logo-path: url("../assets/dns_logo_dark.svg");
 
     --free-domain-status-color: #32D583;
     --free-domain-loader-bg: rgba(50, 213, 131, 0.2);
@@ -151,16 +151,16 @@ html[data-theme='dark'] {
     --busy-domain-loader-bg: rgba(237, 103, 103, 0.2);
     --busy-domain-status-backgroud: rgba(255, 92, 92, 0.08);
 
-    --copy--icon: url("/assets/copy_btn_dark.svg");
-    --copy--icon--completed: url("/assets/copy_btn_done_dark.svg");
+    --copy--icon: url("../assets/copy_btn_dark.svg");
+    --copy--icon--completed: url("../assets/copy_btn_done_dark.svg");
 
-    --arrow--right: url("/assets/arrow_right_dark-blue.svg");
-    --arrow--right--inversed: url("/assets/arrow_right_dark-grey.svg");
+    --arrow--right: url("../assets/arrow_right_dark-blue.svg");
+    --arrow--right--inversed: url("../assets/arrow_right_dark-grey.svg");
 
     --socials--color: #606069;
-    --web__wallet__icon: url("/assets/web_wallet.svg");
-    --copy__link__icon: url("/assets/copy_link_icon_dark.svg");
-    --copy__link__icon--success: url("/assets/copy_link_success.svg");
+    --web__wallet__icon: url("../assets/web_wallet.svg");
+    --copy__link__icon: url("../assets/copy_link_icon_dark.svg");
+    --copy__link__icon--success: url("../assets/copy_link_success.svg");
 
 
     --table-border: 0.5px solid #2D2D32;

@@ -5,7 +5,9 @@ class WalletController {
 		this.store = props.store
 		this.currentWallet = null
 
-    this.connector = new TonConnectSDK.TonConnect();
+    this.connector = new TonConnectSDK.TonConnect({
+      manifestUrl: "https://dns.ton.org/tonconnect-manifest.json"
+    });
     this.tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
       connector: this.connector,
       buttonRootId: 'connect-wallet-button'
