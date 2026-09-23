@@ -5,6 +5,8 @@ const DOMAIN_RENEW_LIMIT_IN_DAYS = 180;
 const RENEW_DOMAIN_PRICE = 0.015;
 const MANAGE_DOMAIN_PRICE = 0.05;
 
+getCoinPrice();
+
 let LOCALE_CONTROLLER = new LocaleController({store, localeDict: 'index'}).init()
 
 $('#navInputElement').placeholder = store.localeDict.start_input_placeholder
@@ -451,15 +453,8 @@ const renderAuctionDomain = (domain, domainItemAddress, auctionInfo) => {
 
     attachPaymentModalListeners('place a bid', domain, minBet, '#auctionBtn', domainItemAddress)
 
-    getCoinPrice().then((price) => {
-        if (price) {
-            $('#auctionAmountConverted').innerText = formatNumber(auctionAmount * price, 2)
-        }
-        if (price) {
-            $('#auctionMinBetConverted').innerText = formatNumber(minBet * price, 2)
-        }
-
-    })
+    renderConvertedTonPrice($('#auctionAmountConverted'), auctionAmount)
+    renderConvertedTonPrice($('#auctionMinBetConverted'), minBet)
 }
 
 const renderFreeDomain = async (domain) => {
@@ -476,13 +471,7 @@ const renderFreeDomain = async (domain) => {
 
     attachPaymentModalListeners('place a bid', domain, salePrice, '#bidButton')
 
-    getCoinPrice().then((price) => {
-        if (price) {
-            $('#freeMinBetConverted').innerText = formatNumber(salePrice * price, 2)
-        }
-    }).catch((e) => {
-        console.error(e)
-    })
+    renderConvertedTonPrice($('#freeMinBetConverted'), salePrice)
 }
 
 const renderDomainAddress = (node, address, domain) => {
@@ -1105,10 +1094,9 @@ function renderOtherPaymentsMethods() {
 }
 
 const renderConvertedTonPrice = (node, priceToCovert) => {
+    node.innerText = '---';
     getCoinPrice().then((price) => {
-        if (price) {
-            node.innerText = formatNumber(priceToCovert * price, 2)
-        }
+        node.innerText = price ? formatNumber(priceToCovert * price, 2) : '---';
     })
 }
 
